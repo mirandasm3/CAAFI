@@ -42,34 +42,48 @@ export const addPersonal = async(req, res)=>{
     console.log(result)
 
     const result2 = await pool.request()
-    .input('noPersonal', sql.Int, req.body.noPersonal)
     .input('puesto', sql.Int, req.body.puesto)
-    .input('nombre', sql.VarChar, req.body.nombre)
-    .input('apellidos', sql.VarChar, req.body.apellidos)
-    .input('password', sql.VarChar, req.body.password)
     .input('id', sql.Int, result.recordset[0].id)
-    .query("INSERT INTO personalCaafi VALUES (@noPersonal,@password,@nombre,@apellidos,@puesto,@id)")
+    .query("INSERT INTO personalCaafi VALUES (@puesto,@id)")
 
-    res.json({id: result.recordset[0].id,matricula:req.body.matricula,
-         nombre:req.body.nombre,
-          apellidos:req.body.apellidos,
-           password:req.body.password,
-            tipo:req.body.tipo})
+    if(result2.rowsAffected[0] === 0){
+        return res.status(404).json({message: "Error al registrar"})
+    }
+    return res.status(200).json({message: "Personal registrado"})
 }
 
 export const updatePersonal = async(req, res)=>{
     const pool = await getConnection()
-    const result = await pool.request()
-    .input('matricula', sql.VarChar, req.body.matricula)
-    .input('nombre', sql.VarChar, req.body.nombre)
-    .input('apellidos', sql.VarChar, req.body.apellidos)
-    .input('password', sql.VarChar, req.body.password)
-    .input('tipo', sql.VarChar, req.body.tipo)
-    .query("UPDATE persona SET matricula = @matricula, nombre = @nombre,"
-        +"apellidos = @apellidos, password = @password, tipo = @tipo WHERE matricula = @matricula ")
-    console.log(result)
+    const result = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+    .query("SELECT idPersona FROM PERSONA WHERE matricula = @matricula")
+    var id = result.recordset[0].id
 
-    res.send("Modificando persona")
+    if(result.rowsAffected[0] === 0){
+        return res.status(404).json({message: "Persona no encontrada"})
+    }else{
+        var result2 = await pool.request()
+            .input('matricula', sql.VarChar, req.body.matricula)
+            .input('nombre', sql.VarChar, req.body.nombre)
+            .input('apellidos', sql.VarChar, req.body.apellidos)
+            .input('password', sql.VarChar, req.body.password)
+            .input('tipo', sql.VarChar, req.body.tipo)
+            .input('id',sql.Int,id)
+            .query("UPDATE persona SET matricula = @matricula, nombre = @nombre,"
+                +"apellidos = @apellidos, password = @password, tipo = @tipo where idPersona = @id ")
+    }
+    if(result2.rowsAffected[0] === 0){
+        return res.status(404).json({message: "Error al modificar"})
+    }else{
+        var result3 = await pool.request()
+            .input('puesto', sql.Int, req.body.puesto)
+            .input('id', sql.Int, id)
+            .query("UPDATE personalCaafi SET idPuesto=@puesto WHERE idPersona = @id)")
+    }
+    if(result3.rowsAffected === 0){
+        return res.status(404).json({message: "Error al modificar"})
+    }else{
+        return res.status(200).json({message: "Personal modificado"})
+    }
 }
 
 export const deletePersonal = async(req, res)=>{
@@ -90,5 +104,5 @@ export const deletePersonal = async(req, res)=>{
         }
     }
 
-    return res.json({message: "Alumno eliminado"})
+    return res.json({message: "Personal eliminado"})
 }
