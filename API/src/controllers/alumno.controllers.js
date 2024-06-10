@@ -4,32 +4,34 @@ import sql from 'mssql'
 export const getAlumnos = async (req, res)=>{
     const pool = await getConnection()
 
-    const result = await pool.request().query('SELECT * FROM persona P INNER JOIN alumno A ON P.idPersona = A.idPersona')
+    var result = await pool.request().query('SELECT * FROM persona P INNER JOIN alumno A ON P.idPersona = A.idPersona')
 
     if(result.rowsAffected[0] === 0){
         return res.status(404).json({message: "No existen alumnos registrados"})
     }
 
-    return res.json(result.recordset[0])
+    return res.json(result.recordset)
 }
 
 export const getAlumno = async(req,res)=>{
 
     const pool = await getConnection()
-    const result = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+    const result = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
     .query("SELECT tipo FROM persona  WHERE matricula = @matricula")
+    console.log(req.body)
+    console.log(result)
     var tipo = result.recordset[0].tipo
     console.log(tipo.toLowerCase())
     if(result.rowsAffected[0] === 0){
         return res.status(404).json({message: "Persona no encontrada"})
     }
     if(tipo.toLowerCase() === 'alumno'){
-        const result2 = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+        const result2 = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
             .query("SELECT * FROM persona P INNER JOIN alumno A ON P.idPersona = A.idPersona WHERE matricula = @matricula")
         return res.json(result2.recordset[0])
     }else
     if(tipo.toLowerCase() === 'delex'){
-        const result2 = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+        const result2 = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
             .query("SELECT * FROM persona P INNER JOIN delex D ON P.idPersona = D.idPersona WHERE matricula = @matricula")
         return res.json(result2.recordset[0])
     }
@@ -71,7 +73,7 @@ export const addAlumno = async(req, res)=>{
 
 export const updateAlumno = async(req, res)=>{
     const pool = await getConnection()
-    const result = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+    const result = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
     .query("SELECT idPersona FROM PERSONA WHERE matricula = @matricula")
     var id = result.recordset[0].id
 
@@ -108,7 +110,7 @@ export const updateAlumno = async(req, res)=>{
 
 export const deleteAlumno = async(req, res)=>{
     const pool = await getConnection()
-    const result = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+    const result = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
     .query("SELECT idPersona,tipo FROM PERSONA WHERE matricula = @matricula")
 
     var tipo = result.recordsets[0].tipo

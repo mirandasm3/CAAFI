@@ -29,14 +29,24 @@ export const requestInscripcion = async(req, res)=>{
     }
 
     //Query agregar idiomas
-    /*const result3 = await pool.request()
-    .input('matricula', sql.VarChar, req.body.matricula)
-    .input('nombre', sql.VarChar, req.body.nombre)
-    .input('apellidos', sql.VarChar, req.body.apellidos)
-    .input('password', sql.VarChar, req.body.password)
-    .input('tipo', sql.VarChar, req.body.tipo)
-    .query("INSERT INTO persona VALUES (@matricula,@nombre,@apellidos,@password,@tipo,'pendiente'); SELECT SCOPE_IDENTITY() AS id")
-    */
+    var idioma = req.body.idIdioma
+    const result3 = await pool.request()
+    .input('idAlumno', sql.Int, result.recordset[0].id)
+    .input('idIdioma', sql.VarChar, idioma.toString())
+    .query("INSERT INTO persona_idioma(idPersona, idIdioma) SELECT @idAlumno AS idPersona, VALUE AS idIdioma FROM dbo.arrayToTable(@idIdioma,',')")
+
+    const result4 = await pool.request()
+    .input('comprobante1', sql.VarBinary, req.body.comprobante1)
+    .input('comprobante2', sql.VarBinary, req.body.comprobante1)
+    .input('IdPeriodoEscolar', sql.Int, req.body.IdPeriodoEscolar)
+    .input('IdPersona', sql.Int, result.recordset[0].id)
+    .input('inscripcion', sql.VarChar, req.body.inscripcion)
+    .query("INSERT INTO comprobante(comprobante1, comprobante2, IdPeriodoEscolar, IdPersona, inscripcion) VALUES(@comprobante1, @comprobante2, @IdPeriodoEscolar, @idPersona, @inscripcion)")
+
+    if(result4.rowsAffected === 0){
+        return res.status(404).json({message:"Error al registrar"})
+    }
+
     return res.status(200).json({message: "Inscripción solicitada"}) 
 }
 

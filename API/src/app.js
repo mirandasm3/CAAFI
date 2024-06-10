@@ -5,6 +5,10 @@ import bcrypt from 'bcryptjs';
 import alumnoRoutes from './routes/alumno.routes.js'
 import personalRoutes from './routes/personal.routes.js'
 import inscripcionRoutes from './routes/inscripcion.routes.js'
+import visitasRoutes from './routes/visitas.routes.js'
+import utilsRoutes from './routes/utils.routes.js'
+import bitacorasRoutes from './routes/bitacoras.routes.js'
+import reportesRoutes from './routes/reportes.routes.js'
 import { getConnection } from './db/connection.js';
 
 const app = express()
@@ -57,9 +61,13 @@ app.post('/login', async (req, res) => {
     });
   };
 
-app.use(verifyToken,alumnoRoutes)
-app.use(verifyToken,personalRoutes)
-app.use(verifyToken,inscripcionRoutes)
+app.use(alumnoRoutes)
+app.use(personalRoutes)
+app.use(inscripcionRoutes)
+app.use(visitasRoutes)
+app.use(utilsRoutes)
+app.use(reportesRoutes)
+app.use(bitacorasRoutes)
 
 export default app
 

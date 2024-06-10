@@ -54,7 +54,7 @@ export const addPersonal = async(req, res)=>{
 
 export const updatePersonal = async(req, res)=>{
     const pool = await getConnection()
-    const result = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+    const result = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
     .query("SELECT idPersona FROM PERSONA WHERE matricula = @matricula")
     var id = result.recordset[0].id
 
@@ -88,7 +88,7 @@ export const updatePersonal = async(req, res)=>{
 
 export const deletePersonal = async(req, res)=>{
     const pool = await getConnection()
-    const result = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
+    const result = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
     .query("SELECT idPersona FROM PERSONA WHERE matricula = @matricula")
 
 

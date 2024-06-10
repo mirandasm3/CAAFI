@@ -9,14 +9,14 @@ import { addPersonal,
 
 const router = Router()
 
-router.get('/personal', getPersonales)
+router.get('/personales', getPersonales)
 
-router.get('/personal/:noPersonal', getPersonal)
+router.get('/personal', getPersonal)
 
 router.post('/personal', addPersonal)
 
-router.put('/personal/:noPersonal', updatePersonal)
+router.put('/personal', updatePersonal)
 
-router.delete('/personal/:noPersonal', deletePersonal)
+router.delete('/personal', deletePersonal)
 
 export default router

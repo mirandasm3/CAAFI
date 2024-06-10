@@ -11,13 +11,13 @@ const router = Router()
 
 router.get('/alumnos', getAlumnos)
 
-router.get('/alumnos/:matricula', getAlumno)
+router.get('/alumno', getAlumno)
 
 router.post('/alumnos', addAlumno)
 
 
-router.put('/alumnos/:matricula', updateAlumno)
+router.put('/alumnos', updateAlumno)
 
-router.delete('/alumnos/:matricula', deleteAlumno)
+router.delete('/alumnos', deleteAlumno)
 
 export default router
