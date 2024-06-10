@@ -31,7 +31,7 @@ export const addBitacora = async(req, res)=>{
 export const getBitacora = async(req, res)=>{
     const pool = await getConnection()
     
-    var periodoEscolar = req.body.periodoEscolar
+    var periodoEscolar = req.body.idPeriodoEscolar
 
     if(periodoEscolar === undefined){
         const result = await pool.request()
@@ -43,6 +43,13 @@ export const getBitacora = async(req, res)=>{
 
         return res.status(200).json(result.recordset)
     }else{
+        const result = await pool.request()
+        .input('idPeriodoEscolar', sql.Int, req.body.idPeriodoEscolar)
+        .query('SELECT b.IdBitacora,p.matricula, p.nombre, p.apellidos, v.fecha, p.tipo FROM persona p JOIN visita v ON p.idPersona = v.idPersona'
+        +' JOIN visita_bitacora vb ON v.idVisita = vb.idVisita JOIN bitacora b ON vb.idBitacora = b.idBitacora'
+        +' JOIN visita_periodoescolar vp ON v.idVisita = vp.idVisita JOIN periodoEscolar pe ON vp.idPeriodoEscolar = pe.idPeriodoEscolar'
+        +' WHERE pe.idPeriodoEscolar = @idPeriodoEscolar')
+        return res.status(200).json(result.recordset)
 
     }
 
