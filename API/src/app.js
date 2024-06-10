@@ -29,8 +29,8 @@ app.post('/login', async (req, res) => {
   
       const user = result.recordset[0];
   
-      const isPasswordValid = password == user.password;
-      if (!isPasswordValid) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
         return res.status(401).json({ message: 'Contraseña incorrecta' });
       }
   

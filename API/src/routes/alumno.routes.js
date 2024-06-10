@@ -13,11 +13,11 @@ router.get('/alumnos', getAlumnos)
 
 router.get('/alumno', getAlumno)
 
-router.post('/alumnos', addAlumno)
+router.post('/alumno', addAlumno)
 
 
-router.put('/alumnos', updateAlumno)
+router.put('/alumno', updateAlumno)
 
-router.delete('/alumnos', deleteAlumno)
+router.delete('/alumno', deleteAlumno)
 
 export default router

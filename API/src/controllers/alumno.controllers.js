@@ -1,5 +1,6 @@
 import {getConnection} from '../db/connection.js'
 import sql from 'mssql'
+import bcrypt from 'bcryptjs'
 
 export const getAlumnos = async (req, res)=>{
     const pool = await getConnection()
@@ -39,16 +40,16 @@ export const getAlumno = async(req,res)=>{
 }
 
 export const addAlumno = async(req, res)=>{
-    console.log(req.body)
-
+    const salt = await bcrypt.genSalt(10);
+    var passCifrada =await bcrypt.hash(req.body.password, salt) 
     const pool = await getConnection()
     const result = await pool.request()
     .input('matricula', sql.VarChar, req.body.matricula)
     .input('nombre', sql.VarChar, req.body.nombre)
     .input('apellidos', sql.VarChar, req.body.apellidos)
-    .input('password', sql.VarChar, req.body.password)
+    .input('password', sql.VarChar, passCifrada)
     .input('tipo', sql.VarChar, req.body.tipo)
-    .query("INSERT INTO persona VALUES (@matricula,@nombre,@apellidos,@password, @tipo); SELECT SCOPE_IDENTITY() AS id")
+    .query("INSERT INTO persona VALUES (@matricula,@nombre,@apellidos,@password, @tipo,'aprobado'); SELECT SCOPE_IDENTITY() AS id")
     console.log(result)
 
     var tipo = req.body.tipo
@@ -69,6 +70,8 @@ export const addAlumno = async(req, res)=>{
     }
 
     return res.json({message: "Alumno registrado"})
+
+
 }
 
 export const updateAlumno = async(req, res)=>{

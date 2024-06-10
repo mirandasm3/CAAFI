@@ -29,14 +29,15 @@ export const getPersonal = async(req,res)=>{
 }
 
 export const addPersonal = async(req, res)=>{
-    console.log(req.body)
+    const salt = await bcrypt.genSalt(10);
+    var passCifrada =await bcrypt.hash(req.body.password, salt) 
 
     const pool = await getConnection()
     const result = await pool.request()
     .input('matricula', sql.VarChar, req.body.matricula)
     .input('nombre', sql.VarChar, req.body.nombre)
     .input('apellidos', sql.VarChar, req.body.apellidos)
-    .input('password', sql.VarChar, req.body.password)
+    .input('password', sql.VarChar, passCifrada)
     //.input('tipo', sql.VarChar, req.body.tipo)
     .query("INSERT INTO persona VALUES (@matricula,@nombre,@apellidos,@password,'personalCaafi'); SELECT SCOPE_IDENTITY() AS id")
     console.log(result)
