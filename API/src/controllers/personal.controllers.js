@@ -2,108 +2,122 @@ import {getConnection} from '../db/connection.js'
 import sql from 'mssql'
 
 export const getPersonales = async (req, res)=>{
-    const pool = await getConnection()
+    try {
+        const pool = await getConnection();
 
-    const result = await pool.request().query('SELECT * FROM persona P INNER JOIN personalCaafi PS ON P.idPersona = PS.idPersona')
+        const result = await pool.request()
+            .execute('sps_GetPersonales');
 
-    if(result.rowsAffected[0] === 0){
-        return res.status(404).json({message: "No existe personal registrado"})
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: "No existe personal registrado" });
+        }
+
+        return res.json(result.recordset);
+    } catch (error) {
+        return res.status(500).json({ message: "Error en el servidor" });
     }
-
-    return res.json(result.recordset[0])
 }
 
 export const getPersonal = async(req,res)=>{
-    console.log(req.params)
+    try {
+        const pool = await getConnection();
 
-    const pool = await getConnection()
-    //Por problemas con la base de datos en la tabla persona, matricula también se cuenta como noPersonal
-    const result = await pool.request().input('matricula', sql.VarChar,req.params.matricula)
-    .query("SELECT * FROM persona P INNER JOIN personalCaafi PS ON P.idPersona = PS.idPersona WHERE matricula = @matricula")
+        const result = await pool.request()
+            .input('matricula', sql.VarChar, req.params.matricula)
+            .execute('sps_GetPersonal');
 
-    if(result.rowsAffected[0] === 0){
-        return res.status(404).json({message: "Persona no encontrada"})
+        return res.json(result.recordset[0]);
+    } catch (error) {
+        
+        if (error.originalError && error.originalError.info && error.originalError.info.message === 'Persona no encontrada') {
+            return res.status(404).json({ message: "Persona no encontrada" });
+        }
+
+        return res.status(500).json({ message: "Error en el servidor" });
     }
-
-    return res.json(result.recordset[0])
 }
 
 export const addPersonal = async(req, res)=>{
-    const salt = await bcrypt.genSalt(10);
-    var passCifrada =await bcrypt.hash(req.body.password, salt) 
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const passCifrada = await bcrypt.hash(req.body.password, salt);
 
-    const pool = await getConnection()
-    const result = await pool.request()
-    .input('matricula', sql.VarChar, req.body.matricula)
-    .input('nombre', sql.VarChar, req.body.nombre)
-    .input('apellidos', sql.VarChar, req.body.apellidos)
-    .input('password', sql.VarChar, passCifrada)
-    //.input('tipo', sql.VarChar, req.body.tipo)
-    .query("INSERT INTO persona VALUES (@matricula,@nombre,@apellidos,@password,'personalCaafi'); SELECT SCOPE_IDENTITY() AS id")
-    console.log(result)
+        const pool = await getConnection();
 
-    const result2 = await pool.request()
-    .input('puesto', sql.Int, req.body.puesto)
-    .input('id', sql.Int, result.recordset[0].id)
-    .query("INSERT INTO personalCaafi VALUES (@puesto,@id)")
+        const result = await pool.request()
+            .input('matricula', sql.VarChar, req.body.matricula)
+            .input('nombre', sql.VarChar, req.body.nombre)
+            .input('apellidos', sql.VarChar, req.body.apellidos)
+            .input('password', sql.VarChar, passCifrada)
+            .input('puesto', sql.Int, req.body.puesto)
+            .execute('spi_AddPersonal');
 
-    if(result2.rowsAffected[0] === 0){
-        return res.status(404).json({message: "Error al registrar"})
+        return res.status(200).json({ message: "Personal registrado" });
+    } catch (error) {
+
+        if (error.originalError && error.originalError.info) {
+            const errorMessage = error.originalError.info.message;
+            if (errorMessage.includes('Error al registrar')) {
+                return res.status(404).json({ message: "Error al registrar" });
+            }
+        }
+
+        return res.status(500).json({ message: "Error en el servidor" });
     }
-    return res.status(200).json({message: "Personal registrado"})
 }
 
 export const updatePersonal = async(req, res)=>{
-    const pool = await getConnection()
-    const result = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
-    .query("SELECT idPersona FROM PERSONA WHERE matricula = @matricula")
-    var id = result.recordset[0].id
+    try {
+        const pool = await getConnection();
 
-    if(result.rowsAffected[0] === 0){
-        return res.status(404).json({message: "Persona no encontrada"})
-    }else{
-        var result2 = await pool.request()
+        const result = await pool.request()
             .input('matricula', sql.VarChar, req.body.matricula)
             .input('nombre', sql.VarChar, req.body.nombre)
             .input('apellidos', sql.VarChar, req.body.apellidos)
             .input('password', sql.VarChar, req.body.password)
-            .input('tipo', sql.VarChar, req.body.tipo)
-            .input('id',sql.Int,id)
-            .query("UPDATE persona SET matricula = @matricula, nombre = @nombre,"
-                +"apellidos = @apellidos, password = @password, tipo = @tipo where idPersona = @id ")
-    }
-    if(result2.rowsAffected[0] === 0){
-        return res.status(404).json({message: "Error al modificar"})
-    }else{
-        var result3 = await pool.request()
             .input('puesto', sql.Int, req.body.puesto)
-            .input('id', sql.Int, id)
-            .query("UPDATE personalCaafi SET idPuesto=@puesto WHERE idPersona = @id)")
-    }
-    if(result3.rowsAffected === 0){
-        return res.status(404).json({message: "Error al modificar"})
-    }else{
-        return res.status(200).json({message: "Personal modificado"})
+            .execute('spa_UpdatePersonal');
+
+        return res.status(200).json({ message: "Personal modificado" });
+    } catch (error) {
+        console.error(error);
+
+        if (error.originalError && error.originalError.info) {
+            const errorMessage = error.originalError.info.message;
+            if (errorMessage.includes('Error al modificar')) {
+                return res.status(404).json({ message: "Error al modificar" });
+            }
+        }
+
+        return res.status(500).json({ message: "Error en el servidor" });
     }
 }
 
 export const deletePersonal = async(req, res)=>{
-    const pool = await getConnection()
-    const result = await pool.request().input('matricula', sql.VarChar,req.body.matricula)
-    .query("SELECT idPersona FROM PERSONA WHERE matricula = @matricula")
+    try {
+        const pool = await getConnection();
+        
+        const result = await pool.request()
+            .input('matricula', sql.VarChar, req.body.matricula)
+            .execute('spe_DeletePersonal');
 
-
-    if(result.rowsAffected[0] === 0){
-        return res.status(404).json({message: "Persona no encontrada"})
-    }else{
-        const result2 = await pool.request().input('idPersona', sql.Int,result.recordset[0].idPersona)
-        .query("DELETE FROM personalCaafi WHERE idPersona = @idPersona")
-
-        if(result2.rowsAffected[0] == 1){
-            const result2 = await pool.request().input('idPersona', sql.Int,result.recordset[0].idPersona)
-            .query("DELETE FROM persona WHERE idPersona = @idPersona")
+        if (result.recordset && result.recordset.length > 0) {
+            return res.status(200).json({ message: result.recordset[0].message });
+        } else {
+            return res.status(500).json({ message: "Error al eliminar el personal" });
         }
-    }
+    } catch (error) {
+        console.error(error);
 
-    return res.json({message: "Personal eliminado"})
+        if (error.originalError && error.originalError.info) {
+            const errorMessage = error.originalError.info.message;
+            if (errorMessage.includes('Persona no encontrada')) {
+                return res.status(404).json({ message: "Persona no encontrada" });
+            } else if (errorMessage.includes('Error al eliminar')) {
+                return res.status(500).json({ message: "Error al eliminar el personal" });
+            }
+        }
+
+        return res.status(500).json({ message: "Error en el servidor" });
+    }
 }

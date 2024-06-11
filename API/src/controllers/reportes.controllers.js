@@ -2,39 +2,24 @@ import {getConnection} from '../db/connection.js'
 import sql from 'mssql'
 
 export const addReportes = async(req, res) =>{
-    const pool = await getConnection()
+    try {
+        const pool = await getConnection();
 
-    var tipoReporte = req.body.tipoReporte
-    console.log(tipoReporte)
-    if(tipoReporte === 'Visitas'){
         const result = await pool.request()
-        .input('fechaMax', sql.DateTime, req.body.fechaMax)
-        .input('fechaMin', sql.DateTime, req.body.fechaMin)
-        .query('SELECT COUNT(*) AS Visitas FROM visita WHERE fecha >= @fechaMin and fecha < dateadd(day, 1, @fechaMax) ')
+            .input('tipoReporte', sql.NVarChar(50), req.body.tipoReporte)
+            .input('fechaMax', sql.DateTime, req.body.fechaMax)
+            .input('fechaMin', sql.DateTime, req.body.fechaMin)
+            .input('idPeriodoEscolar', sql.Int, req.body.idPeriodoEscolar)
+            .execute('sps_AddReportes');
 
-        return res.status(200).json(result.recordset[0])
-    }else
-    if(tipoReporte === 'Inscripciones'){
-        const result = await pool.request()
-        .input('idPeriodoEscolar', sql.Int, req.body.idPeriodoEscolar)
-        .query('SELECT COUNT(DISTINCT p.idPersona) AS TotalInscritos FROM Persona p JOIN Comprobante c ON p.idPersona = c.idPersona'
-        +' JOIN periodoEscolar pe ON c.idPeriodoEscolar = pe.idPeriodoEscolar WHERE pe.idPeriodoEscolar = 1;')
-        return res.status(200).json(result.recordset[0])
-    }else
-    if(tipoReporte === 'Salas'){
-        const result = await pool.request()
-        .input('fechaMax', sql.DateTime, req.body.fechaMax)
-        .input('fechaMin', sql.DateTime, req.body.fechaMin)        
-        .query('SELECT COUNT(DISTINCT sala) AS SalasUtilizadas FROM visita WHERE fecha >= @fechaMin and fecha < dateadd(day, 1, @fechaMax) ')
-
-        return res.status(200).json(result.recordset[0])
-    }else
-    if(tipoReporte === 'Alumnos'){
-        const result = await pool.request()
-        .input('idPeriodoEscolar', sql.Int, req.body.idPeriodoEscolar)
-        .query('SELECT * FROM dbo.fn_contarAlumnosIdiomas(@idPeriodoEscolar)')
-
-        return res.status(200).json(result.recordset[0])
+        if (result.recordset && result.recordset.length > 0) {
+            return res.status(200).json(result.recordset[0]);
+        } else {
+            return res.status(404).json({ message: "No se encontraron datos para el reporte solicitado" });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Error en el servidor" });
     }
 }
 
