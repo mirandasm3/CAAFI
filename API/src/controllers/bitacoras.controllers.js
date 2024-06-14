@@ -27,6 +27,7 @@ export const addBitacora = async(req, res)=>{
 
         return res.status(200).json({message: "Registro exitoso"});
     }catch(error){
+        console.log(error)
         return res.status(500).json({message: "Error en el servidor"});
     }
 }

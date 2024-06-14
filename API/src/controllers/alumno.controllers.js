@@ -86,6 +86,7 @@ export const updateAlumno = async(req, res)=>{
 
         return res.json({message: "Alumno modificado"})
     }catch(error){
+        console.log(error)
         if (error.originalError && error.originalError.info && error.originalError.info.message.includes('Persona no encontrada')) {
             return res.status(404).json({ message: "Persona no encontrada" });
         }

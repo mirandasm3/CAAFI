@@ -3,7 +3,7 @@ import sql from 'mssql'
 const dbSettings = {
     user: "dboCaafi",
     password: "4l31W3YwX3IvBPJ",
-    server:"192.168.100.92",
+    server:"10.30.7.8",
     database: "CAAFI",
     options: {
         encrypt: false,

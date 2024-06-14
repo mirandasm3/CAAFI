@@ -6,7 +6,7 @@ export const addReportes = async(req, res) =>{
         const pool = await getConnection();
 
         const result = await pool.request()
-            .input('tipoReporte', sql.NVarChar(50), req.body.tipoReporte)
+            .input('tipoReporte', sql.VarChar, req.body.tipoReporte)
             .input('fechaMax', sql.DateTime, req.body.fechaMax)
             .input('fechaMin', sql.DateTime, req.body.fechaMin)
             .input('idPeriodoEscolar', sql.Int, req.body.idPeriodoEscolar)
@@ -22,11 +22,11 @@ export const addReportes = async(req, res) =>{
         return res.status(500).json({ message: "Error en el servidor" });
     }
 }
-
+/*
 export const getReportes = async(req, res)=>{
     const pool = await getConnection()
     const result = await pool.request().query('SELECT r.tipoReporte, pe.idPeriodoEscolar FROM Reporte r JOIN periodoEscolar pe ON r.idPeriodoEscolar = pe.idPeriodoEscolar')
 
     return res.status(200).json(result.recordset)
 
-}
+}*/

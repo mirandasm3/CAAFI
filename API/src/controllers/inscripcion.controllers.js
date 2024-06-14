@@ -17,9 +17,9 @@ export const requestInscripcion = async(req, res)=>{
             .input('programaEducativo', sql.VarChar, req.body.programaEducativo || null)
             .input('semestre', sql.VarChar, req.body.semestreSeccion || null)
             .input('nivel', sql.VarChar, req.body.nivel || null)
-            .input('idIdioma', sql.VarChar, req.body.idIdioma.toString())
+            .input('idIdioma', sql.Int, req.body.idIdioma)
             .input('comprobante1', sql.VarBinary, req.body.comprobante1)
-            .input('comprobante2', sql.VarBinary, req.body.comprobante1)
+            .input('comprobante2', sql.VarBinary, req.body.comprobante2)
             .input('IdPeriodoEscolar', sql.Int, req.body.IdPeriodoEscolar)
             .input('inscripcion', sql.VarChar, req.body.inscripcion)
             .execute('spi_RequestInscripcion');
