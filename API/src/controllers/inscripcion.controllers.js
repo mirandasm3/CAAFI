@@ -2,31 +2,41 @@ import {getConnection} from '../db/connection.js'
 import bcrypt from 'bcryptjs'
 import sql from 'mssql'
 
+const getFileFromRequest = (req, name) => {
+    let file = null;
+    for(let i = 0; i < req.files.length; i++){
+        if(req.files[i].fieldname === name){
+            file = req.files[i];
+            break;
+        }
+    }
+    return file;
+};
+
 export const requestInscripcion = async(req, res)=>{
     try {
+        const body = JSON.parse(req.body.requestData);
+
         const salt = await bcrypt.genSalt(10);
-        const passCifrada = await bcrypt.hash(req.body.password, salt);
+        const passCifrada = await bcrypt.hash(body.password, salt);
         const pool = await getConnection();
 
-        //const comprobante1bf = Buffer.from(req.body.comprobante1);
-        //const comprobante2bf = Buffer.from(req.body.comprobante1);
-
-
         const result = await pool.request()
-            .input('matricula', sql.VarChar, req.body.matricula)
-            .input('nombre', sql.VarChar, req.body.nombre)
-            .input('apellidos', sql.VarChar, req.body.apellidos)
+            .input('matricula', sql.VarChar, body.matricula)
+            .input('nombre', sql.VarChar, body.nombre)
+            .input('apellidos', sql.VarChar, body.apellidos)
             .input('password', sql.VarChar, passCifrada)
-            .input('tipo', sql.VarChar, req.body.tipo)
-            .input('facultad', sql.VarChar, req.body.facultad || null)
-            .input('programaEducativo', sql.VarChar, req.body.programaEducativo || null)
-            .input('semestre', sql.VarChar, req.body.semestreSeccion || null)
-            .input('nivel', sql.VarChar, req.body.nivel || null)
-            .input('idIdioma', sql.Int, req.body.idIdioma)
-            .input('comprobante1', sql.VarBinary, req.body.comprobante1)
-            .input('comprobante2', sql.VarBinary, req.body.comprobante2)
-            .input('IdPeriodoEscolar', sql.Int, req.body.IdPeriodoEscolar)
-            .input('inscripcion', sql.VarChar, req.body.inscripcion)
+            .input('tipo', sql.VarChar, body.tipo)
+            .input('facultad', sql.VarChar, body.facultad || null)
+            .input('programaEducativo', sql.VarChar, body.programaEducativo || null)
+            .input('semestre', sql.VarChar, body.semestreSeccion || null)
+            .input('nivel', sql.VarChar, body.nivel || null)
+            .input('idIdioma', sql.Int, body.idIdioma)
+            .input('comprobante1', sql.VarBinary, getFileFromRequest(req, "comprobante1").buffer)
+            .input('comprobante2', sql.VarBinary, getFileFromRequest(req, "comprobante2")?.buffer)
+            .input('IdPeriodoEscolar', sql.Int, body.IdPeriodoEscolar)
+            .input('inscripcion', sql.VarChar, body.inscripcion)
+            .input('status', sql.VarChar, body.status)
             .execute('spi_RequestInscripcion');
 
         return res.status(200).json({ message: "Inscripción solicitada" });
@@ -45,7 +55,7 @@ export const acceptInscripcion = async(req, res)=>{
         const pool = await getConnection();
 
         const result = await pool.request()
-            .input('matricula', sql.VarChar, req.body.matricula)
+            .input('idPersona', sql.Int, req.body.idPersona)
             .execute('spa_AcceptInscripcion');
 
         return res.status(200).json({ message: "Inscripción aprobada" });

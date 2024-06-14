@@ -5,13 +5,21 @@ import bcrypt from 'bcryptjs'
 export const getAlumnos = async (req, res)=>{
     const pool = await getConnection()
 
-    const result = await pool.request().execute('sps_GetAlumnos');
+    const resultAlumnos = await pool.request().execute('sps_GetAlumnos');
 
-    if(result.rowsAffected[0] === 0){
+    if(resultAlumnos.rowsAffected[0] === 0){
         return res.status(404).json({message: "No existen alumnos registrados"})
     }
 
-    return res.json(result.recordset)
+    const resultDelex = await pool.request().execute('sps_GetDelex');
+
+    if(resultDelex.rowsAffected[0] === 0){
+        return res.status(404).json({message: "No existen delex registrados"})
+    }
+
+    const result = [...resultAlumnos.recordset, ...resultDelex.recordset]
+
+    return res.json(result)
 }
 
 export const getAlumno = async(req,res)=>{
