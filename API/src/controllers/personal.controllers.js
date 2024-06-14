@@ -1,4 +1,5 @@
 import {getConnection} from '../db/connection.js'
+import bcrypt from 'bcryptjs'
 import sql from 'mssql'
 
 export const getPersonales = async (req, res)=>{
@@ -39,6 +40,7 @@ export const getPersonal = async(req,res)=>{
 
 export const addPersonal = async(req, res)=>{
     try {
+        console.log(req.body)
         const salt = await bcrypt.genSalt(10);
         const passCifrada = await bcrypt.hash(req.body.password, salt);
 
@@ -61,6 +63,8 @@ export const addPersonal = async(req, res)=>{
                 return res.status(404).json({ message: "Error al registrar" });
             }
         }
+
+        console.log(error)
 
         return res.status(500).json({ message: "Error en el servidor" });
     }

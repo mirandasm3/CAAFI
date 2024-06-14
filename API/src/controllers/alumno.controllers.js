@@ -107,7 +107,7 @@ export const deleteAlumno = async(req, res)=>{
     try{
         const pool = await getConnection()
         const result = await pool.request()
-        .input('matricula', sql.VarChar, req.body.matricula)
+        .input('idPersona', sql.Int, req.body.idPersona)
         .execute('spe_DeletePersona');
         return res.json({ message: "Alumno eliminado" });
     }catch(error){
