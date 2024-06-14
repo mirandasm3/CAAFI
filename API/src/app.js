@@ -2,6 +2,7 @@ import express from 'express'
 import jwt from 'jsonwebtoken';
 import sql from 'mssql'
 import bcrypt from 'bcryptjs';
+import cors from 'cors';
 import alumnoRoutes from './routes/alumno.routes.js'
 import personalRoutes from './routes/personal.routes.js'
 import inscripcionRoutes from './routes/inscripcion.routes.js'
@@ -16,26 +17,35 @@ app.use(express.json())
 
 app.post('/login', async (req, res) => {
     const { matricula, password } = req.body;
-  
+
     try {
       const pool = await getConnection();
-      const result = await pool.request()
+
+      /*if(matricula.length === 5){
+        var result = await pool.request()
+        .input('matricula', sql.VarChar, matricula)
+        .query('SELECT * FROM persona P INNER JOIN PersonalCaafi PC ON P.idPersona = PC.idPersona WHERE matricula = @matricula');
+      }else{*/
+        var result = await pool.request()
         .input('matricula', sql.VarChar, matricula)
         .query('SELECT * FROM persona WHERE matricula = @matricula');
   
+      
+      
       if (result.rowsAffected[0] === 0) {
         return res.status(401).json({ message: 'Usuario no existente' });
       }
   
       const user = result.recordset[0];
-  
+      var usertipo = user.tipo
+      console.log(usertipo)
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(401).json({ message: 'Contraseña incorrecta' });
       }
   
       const token = jwt.sign({ id: user.id }, 'secret_key', { expiresIn: '1h' });
-      res.json({ token });
+      res.status(200).json({ token, usertipo});
   
     } catch (error) {
       console.error(error);
@@ -61,6 +71,11 @@ app.post('/login', async (req, res) => {
     });
   };
 
+const corsOptions = {
+    
+};
+
+app.use(cors(corsOptions));
 app.use(alumnoRoutes)
 app.use(personalRoutes)
 app.use(inscripcionRoutes)
@@ -68,6 +83,12 @@ app.use(visitasRoutes)
 app.use(utilsRoutes)
 app.use(reportesRoutes)
 app.use(bitacorasRoutes)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  next();
+});
 
 export default app
 

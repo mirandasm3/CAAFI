@@ -24,7 +24,7 @@ export const getIdiomas = async(req, res) =>{
     return res.json(result.recordset)
 }
 
-export const getReporte = async(req, res) =>{
+/*export const getReporte = async(req, res) =>{
     const pool = await getConnection()
 
     const result = await pool.request().query('SELECT tipo FROM reporte')
@@ -34,7 +34,7 @@ export const getReporte = async(req, res) =>{
     }
 
     return res.json(result.recordset)
-}
+}*/
 
 export const getPeriodoEscolar = async(req, res) =>{
     const pool = await getConnection()
