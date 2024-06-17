@@ -16,7 +16,7 @@ const getFileFromRequest = (req, name) => {
 export const requestInscripcion = async(req, res)=>{
     try {
         const body = JSON.parse(req.body.requestData);
-
+        
         const salt = await bcrypt.genSalt(10);
         const passCifrada = await bcrypt.hash(body.password, salt);
         const pool = await getConnection();

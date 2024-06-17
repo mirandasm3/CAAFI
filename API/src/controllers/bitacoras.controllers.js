@@ -38,9 +38,7 @@ export const getBitacora = async(req, res)=>{
         const { idPeriodoEscolar, idPersona } = req.body;
 
         const result = await pool.request()
-            .input('idPeriodoEscolar', sql.Int, idPeriodoEscolar || null)
-            .input('idPersona', sql.Int, idPersona || null)
-            .execute('sps_GetBitacora');
+            .query('SELECT * FROM bitacora');
 
         return res.status(200).json(result.recordset);
     } catch (error) {
@@ -110,7 +108,7 @@ export const deleteBitacora = async(req, res)=>{
             return res.status(404).json('No se pudo eliminar la bitácora');
         }
 
-        return res.json('Bitacora eliminada');
+        return res.json({message:'Bitacora eliminada'});
     } catch (error) {
 
         if (error.originalError && error.originalError.info && error.originalError.info.message.includes('Bitacora no existe')) {

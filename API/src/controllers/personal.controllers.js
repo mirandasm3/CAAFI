@@ -21,10 +21,9 @@ export const getPersonales = async (req, res)=>{
 
 export const getPersonal = async(req,res)=>{
     try {
-        const pool = await getConnection();
-
+        const pool = await getConnection(); 
         const result = await pool.request()
-            .input('matricula', sql.VarChar, req.params.matricula)
+            .input('matricula', sql.VarChar, req.body.matricula)
             .execute('sps_GetPersonal');
 
         return res.json(result.recordset[0]);

@@ -18,8 +18,9 @@ export const addVisita = async(req, res)=>{
             return res.status(500).json({ message: "Error al registrar la visita" });
         }
     } catch (error) {
-
+        console.log(error)
         if (error.originalError && error.originalError.info) {
+            
             const errorMessage = error.originalError.info.message;
             if (errorMessage.includes('Persona no encontrada')) {
                 return res.status(404).json({ message: "Persona no encontrada" });

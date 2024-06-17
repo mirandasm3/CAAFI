@@ -17,7 +17,7 @@ export const getAlumnos = async (req, res)=>{
         return res.status(404).json({message: "No existen delex registrados"})
     }
 
-    const result = [...resultAlumnos.recordset, ...resultDelex.recordset]
+    const result = [...resultAlumnos.recordset , ...resultDelex.recordset]
 
     return res.json(result)
 }
