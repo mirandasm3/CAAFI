@@ -48,7 +48,7 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, 'secret_key', { expiresIn: '1h' });
     console.log(user.nombre)
-    res.status(200).json({ name: user.nombre, surnames: user.apellidos, token, usertipo });
+    res.status(200).json({ name: user.nombre, surnames: user.apellidos, token, usertipo, matricula, idPersona: user.idPersona });
 
   } catch (error) {
     console.error(error);

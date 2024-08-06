@@ -7,14 +7,10 @@ export const getAlumnos = async (req, res)=>{
 
     const resultAlumnos = await pool.request().execute('sps_GetAlumnos');
 
-    if(resultAlumnos.rowsAffected[0] === 0){
-        return res.status(404).json({message: "No existen alumnos registrados"})
-    }
-
     const resultDelex = await pool.request().execute('sps_GetDelex');
 
-    if(resultDelex.rowsAffected[0] === 0){
-        return res.status(404).json({message: "No existen delex registrados"})
+    if(resultAlumnos.rowsAffected[0] === 0 && resultDelex.rowsAffected[0] === 0){
+        return res.status(404).json({message: "No existen alumnos/delex registrados"})
     }
 
     const result = [...resultAlumnos.recordset , ...resultDelex.recordset]

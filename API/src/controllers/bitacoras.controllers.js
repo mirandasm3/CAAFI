@@ -19,6 +19,7 @@ export const addBitacora = async(req, res)=>{
             .input('habilidadArea', sql.VarChar, req.body.habilidadArea)
             .input('material', sql.VarChar, req.body.material)
             .input('observacion', sql.VarChar, req.body.observacion)
+            .input('idAlumno', sql.Int, req.body.idAlumno)
             .execute('spi_AddBitacora');
 
         if(result.rowsAffected[0] === 0){
@@ -32,13 +33,28 @@ export const addBitacora = async(req, res)=>{
     }
 }
 
+export const getBitacoras = async(req, res)=>{
+    try {
+        const pool = await getConnection();
+
+        const result = await pool.request()
+            .query('SELECT * FROM bitacora')
+
+        return res.status(200).json(result.recordset);
+    } catch (error) {
+        return res.status(500).json({ message: "Error en el servidor" });
+    }
+
+}
+
 export const getBitacora = async(req, res)=>{
     try {
         const pool = await getConnection();
-        const { idPeriodoEscolar, idPersona } = req.body;
+        const { idPersona } = req.params;
 
         const result = await pool.request()
-            .query('SELECT * FROM bitacora');
+            .input('idPersona', sql.Int, idPersona)
+            .query('SELECT * FROM bitacora WHERE idAlumno = @idPersona')
 
         return res.status(200).json(result.recordset);
     } catch (error) {
